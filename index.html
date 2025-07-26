@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>PDF Quote Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #ffffff; /* Changed from #eaf3fc to white */
+        color: #333;
+        margin: 20px;
+      }
+
+      #container {
+        width: 80%;
+        margin: 0 auto;
+        display: block; /* Changed from 'none' to 'block' */
+        background-color: rgb(64, 64, 64, 0.02);
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+      }
+
+      h1 {
+        color: #0051a2;
+      }
+
+      input,
+      button {
+        padding: 8px;
+        margin: 5px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+      }
+
+      table {
+        width: 100%;
+        margin-top: 20px;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: left;
+      }
+
+      .add-service {
+        background-color: #007bff;
+        color: white;
+        border: none;
+      }
+
+      .export-pdf {
+        background-color: #dc3545;
+        color: white;
+        border: none;
+      }
+
+      .total-box {
+        font-weight: bold;
+        margin-top: 20px;
+      }
+
+      #show-quote {
+        background-color: #28a745;
+        color: white;
+        border: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container">
+      <h1>Quote Form</h1>
+
+      <h3>Client Information</h3>
+      <input type="text" id="clientName" placeholder="Client Name" />
+      <input type="text" id="clientEmail" placeholder="Client Email" />
+
+      <h3>Services</h3>
+      <table id="servicesTable">
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th>Hours</th>
+            <th>Unit Price (€)</th>
+            <th>Total (€)</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <button class="add-service" onclick="addService()">+ Add Service</button>
+
+      <div class="total-box">
+        <p>Subtotal: <span id="subtotal">0.00</span> €</p>
+        <p>Total: <span id="total">0.00</span> €</p>
+      </div>
+
+      <button class="export-pdf" onclick="exportPDF()">📄 Export as PDF</button>
+    </div>
+
+    <script>
+      function addService() {
+        const tbody = document.querySelector("#servicesTable tbody");
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+        <td><input type="text" class="desc"></td>
+        <td><input type="number" class="qty" value="1" min="1" onchange="calculateTotals()"></td>
+        <td><input type="number" class="price" value="0" min="0" onchange="calculateTotals()"></td>
+        <td><span class="line-total">0.00</span> €</td>
+      `;
+
+        tbody.appendChild(row);
+      }
+
+      function calculateTotals() {
+        let subtotal = 0;
+        document.querySelectorAll("#servicesTable tbody tr").forEach((row) => {
+          const qty = parseFloat(row.querySelector(".qty").value);
+          const price = parseFloat(row.querySelector(".price").value);
+          const total = qty * price;
+          row.querySelector(".line-total").textContent = total.toFixed(2);
+          subtotal += total;
+        });
+
+        document.getElementById("subtotal").textContent = subtotal.toFixed(2);
+        document.getElementById("total").textContent = subtotal.toFixed(2);
+      }
+
+      async function exportPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        const name = document.getElementById("clientName").value;
+        const email = document.getElementById("clientEmail").value;
+        const rows = document.querySelectorAll("#servicesTable tbody tr");
+
+        let y = 20;
+        doc.setFontSize(16);
+        doc.text("Quote", 105, y, { align: "center" });
+
+        y += 10;
+        doc.setFontSize(12);
+        doc.text(`Client: ${name}`, 20, y);
+        y += 7;
+        doc.text(`Email: ${email}`, 20, y);
+
+        y += 10;
+        doc.text("Services:", 20, y);
+        y += 7;
+
+        doc.autoTable({
+          startY: y,
+          head: [["Description", "Quantity", "Unit Price (€)", "Total (€)"]],
+          body: [...rows].map((row) => [
+            row.querySelector(".desc").value,
+            row.querySelector(".qty").value,
+            row.querySelector(".price").value,
+            (
+              row.querySelector(".qty").value *
+              row.querySelector(".price").value
+            ).toFixed(2),
+          ]),
+          theme: "grid",
+        });
+
+        y = doc.lastAutoTable.finalY + 10;
+        doc.setFont(undefined, "bold");
+        doc.text(
+          `Total: ${document.getElementById("total").textContent} €`,
+          20,
+          y
+        );
+        doc.setFont(undefined, "normal");
+
+        doc.save("quote.pdf");
+      }
+    </script>
+  </body>
+</html>
