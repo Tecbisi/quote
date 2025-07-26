@@ -6,35 +6,89 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <style>
+
+      /* Basic reset and typography */
       body {
         font-family: Arial, sans-serif;
-        background-color: #ffffff; /* Changed from #eaf3fc to white */
+        background-color: #ffffff;
         color: #333;
-        margin: 20px;
+        margin: 0;
+        padding-top: 60px; /* for fixed header */
+        padding-bottom: 100px; /* for fixed footer */
+        min-height: 100vh;
+        position: relative;
       }
 
+      /* Header */
+      header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background: #0051a2;
+        color: white;
+        padding: 15px 20px;
+        font-size: 20px;
+        font-weight: bold;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 1000;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      }
+
+      /* Language selector styling */
+      #languageSelect {
+        background-color: white;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        padding: 6px 12px;
+        font-size: 14px;
+        cursor: pointer;
+        min-width: 110px;
+      }
+
+      /* Container */
       #container {
         width: 80%;
+        max-width: 900px;
         margin: 0 auto;
-        display: block; /* Changed from 'none' to 'block' */
-        background-color: rgb(64, 64, 64, 0.02);
+        background-color: rgb(64 64 64 / 0.02);
         padding: 20px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         border-radius: 8px;
       }
 
       h1 {
-        color: #0051a2;
+        margin-top: 10px;
+      }
+      
+   
+      h3 {
+        margin-top: 0px;
       }
 
       input,
-      button {
+      button,
+      select {
         padding: 8px;
-        margin: 5px;
+        margin: 5px 5px 15px 0;
         border-radius: 5px;
         border: 1px solid #ccc;
+        font-size: 14px;
       }
 
+      input[type="number"] {
+        width: 90%;
+        box-sizing: border-box;
+      }
+      
+       input[type="text"] {
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      /* Table styling */
       table {
         width: 100%;
         margin-top: 20px;
@@ -48,138 +102,387 @@
         text-align: left;
       }
 
+      /* Buttons */
       .add-service {
         background-color: #007bff;
         color: white;
         border: none;
+        cursor: pointer;
+        font-size: 14px;
+        border-radius: 5px;
+        padding: 10px 15px;
+      }
+
+      .add-service:hover {
+        background-color: #0056b3;
       }
 
       .export-pdf {
         background-color: #dc3545;
         color: white;
         border: none;
+        cursor: pointer;
+        font-size: 14px;
+        border-radius: 5px;
+        padding: 10px 15px;
+        margin-top: 10px;
       }
 
+      .export-pdf:hover {
+        background-color: #a71d2a;
+      }
+
+      /* Total box */
       .total-box {
         font-weight: bold;
         margin-top: 20px;
       }
 
-      #show-quote {
-        background-color: #28a745;
+      /* Footer styling */
+      footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: #0051a2;
         color: white;
-        border: none;
+        padding: 12px 20px;
+        text-align: center;
+        font-size: 14px;
+        border-top: 1px solid #003b70;
+        line-height: 1.4;
+        white-space: pre-line; /* respect line breaks */
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 768px) {
+        #container {
+          width: 95%;
+          padding: 15px;
+        }
+
+        input[type="text"]
+        
+        input[type="number"] {
+          width: 100%;
+          margin-bottom: 12px;
+        }
+
+        input,
+        button,
+        select {
+          margin-right: 0;
+        }
+
+        .add-service,
+        .export-pdf {
+          width: 100%;
+          padding: 12px 0;
+          margin-top: 12px;
+        }
+
+        header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 10px;
+          font-size: 18px;
+        }
+
+        #languageSelect {
+          min-width: 100%;
+        }
+      }
+      /* Add textarea styles */
+      textarea {
+        width: 100%;
+        min-height: 80px;
+        padding: 8px;
+        margin: 0px 0px 0px 0;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        font-size: 14px;
+        box-sizing: border-box;
+        resize: vertical;
       }
     </style>
   </head>
   <body>
-    <div id="container">
-      <h1>Quote Form</h1>
+    <header>
+      <div id="headerTitle">PDF Quote Generator</div>
+      <select id="languageSelect" aria-label="Select Language">
+        <option value="en" selected>English</option>
+        <option value="fr">Français</option>
+        <option value="it">Italiano</option>
+      </select>
+    </header>
 
-      <h3>Client Information</h3>
+    <div id="container">
+      <h1 id="title">Quote Form</h1>
+
+      <!-- Added quote title input -->
+      <h3 id="quoteTitleLabel">Quote Title</h3>
+      <input type="text" id="quoteTitle" placeholder="Enter quote title here" />
+
+      <h3 id="clientInfoTitle">Client Information</h3>
       <input type="text" id="clientName" placeholder="Client Name" />
       <input type="text" id="clientEmail" placeholder="Client Email" />
 
-      <h3>Services</h3>
-      <table id="servicesTable">
+      <h3 id="servicesTitle">Services</h3>
+      <table id="servicesTable" aria-label="Services Table">
         <thead>
           <tr>
-            <th>Description</th>
-            <th>Hours</th>
-            <th>Unit Price (€)</th>
-            <th>Total (€)</th>
+            <th id="descHeader">Description</th>
+            <th id="hoursHeader">Hours</th>
+            <th id="unitPriceHeader">Unit Price (€)</th>
+            <th id="totalHeader">Total (€)</th>
           </tr>
         </thead>
         <tbody></tbody>
       </table>
 
-      <button class="add-service" onclick="addService()">+ Add Service</button>
+      <button class="add-service" onclick="addService()" id="addServiceBtn">+ Add Service</button>
 
       <div class="total-box">
-        <p>Subtotal: <span id="subtotal">0.00</span> €</p>
-        <p>Total: <span id="total">0.00</span> €</p>
+        <p><span id="subtotalLabel">Subtotal:</span> <span id="subtotal">0.00</span> €</p>
+        <p><span id="totalLabel">Total:</span> <span id="total">0.00</span> €</p>
       </div>
 
-      <button class="export-pdf" onclick="exportPDF()">📄 Export as PDF</button>
+      <!-- Added description textarea -->
+      <h3 id="descriptionLabel">Description / Notes</h3>
+      <textarea id="quoteDescription" placeholder="Enter any additional description or notes here"></textarea>
+
+      <button class="export-pdf" onclick="exportPDF()" id="exportPdfBtn">📄 Export as PDF</button>
     </div>
 
+    <footer>
+      <span id="footerText"></span>
+    </footer>
+
     <script>
+      // Updated translations including new fields
+      const translations = {
+        en: {
+          headerTitle: "PDF Quote Generator",
+          title: "Quote Form",
+          quoteTitleLabel: "Quote Title",
+          clientInfoTitle: "Client Information",
+          clientNamePlaceholder: "Client Name",
+          clientEmailPlaceholder: "Client Email",
+          servicesTitle: "Services",
+          descHeader: "Description",
+          hoursHeader: "Hours",
+          unitPriceHeader: "Unit Price (€)",
+          totalHeader: "Total (€)",
+          addServiceBtn: "+ Add Service",
+          subtotalLabel: "Subtotal:",
+          totalLabel: "Total:",
+          exportPdfBtn: "📄 Export as PDF",
+          descriptionLabel: "Description / Notes",
+          footerText: (year) =>
+            `© 2025 - ${year} - All rights reserved.\nNB: Your information entered in this webpage is not stored anywhere. On reload, all data will be lost.`,
+        },
+        fr: {
+          headerTitle: "Générateur de devis PDF",
+          title: "Formulaire de devis",
+          quoteTitleLabel: "Titre du devis",
+          clientInfoTitle: "Informations client",
+          clientNamePlaceholder: "Nom du client",
+          clientEmailPlaceholder: "Email du client",
+          servicesTitle: "Services",
+          descHeader: "Description",
+          hoursHeader: "Heures",
+          unitPriceHeader: "Prix unitaire (€)",
+          totalHeader: "Total (€)",
+          addServiceBtn: "+ Ajouter un service",
+          subtotalLabel: "Sous-total :",
+          totalLabel: "Total :",
+          exportPdfBtn: "📄 Exporter en PDF",
+          descriptionLabel: "Description / Notes",
+          footerText: (year) =>
+            `© 2025 - ${year} - Tous droits réservés.\nNB : Vos informations saisies dans cette page ne sont pas stockées. En cas de rechargement, toutes les données seront perdues.`,
+        },
+        it: {
+          headerTitle: "Generatore di preventivi PDF",
+          title: "Modulo preventivo",
+          quoteTitleLabel: "Titolo del preventivo",
+          clientInfoTitle: "Informazioni cliente",
+          clientNamePlaceholder: "Nome cliente",
+          clientEmailPlaceholder: "Email cliente",
+          servicesTitle: "Servizi",
+          descHeader: "Descrizione",
+          hoursHeader: "Ore",
+          unitPriceHeader: "Prezzo unitario (€)",
+          totalHeader: "Totale (€)",
+          addServiceBtn: "+ Aggiungi servizio",
+          subtotalLabel: "Totale parziale:",
+          totalLabel: "Totale:",
+          exportPdfBtn: "📄 Esporta come PDF",
+          descriptionLabel: "Descrizione / Note",
+          footerText: (year) =>
+            `© 2025 - ${year} - Tutti i diritti riservati.\nNB: Le informazioni inserite in questa pagina non vengono memorizzate da nessuna parte. Al ricaricamento, tutti i dati saranno persi.`,
+        },
+      };
+
+      const elementsToTranslate = {
+        headerTitle: document.getElementById("headerTitle"),
+        title: document.getElementById("title"),
+        quoteTitleLabel: document.getElementById("quoteTitleLabel"),
+        clientInfoTitle: document.getElementById("clientInfoTitle"),
+        clientName: document.getElementById("clientName"),
+        clientEmail: document.getElementById("clientEmail"),
+        servicesTitle: document.getElementById("servicesTitle"),
+        descHeader: document.getElementById("descHeader"),
+        hoursHeader: document.getElementById("hoursHeader"),
+        unitPriceHeader: document.getElementById("unitPriceHeader"),
+        totalHeader: document.getElementById("totalHeader"),
+        addServiceBtn: document.getElementById("addServiceBtn"),
+        subtotalLabel: document.getElementById("subtotalLabel"),
+        totalLabel: document.getElementById("totalLabel"),
+        exportPdfBtn: document.getElementById("exportPdfBtn"),
+        descriptionLabel: document.getElementById("descriptionLabel"),
+        footerText: document.getElementById("footerText"),
+      };
+
+      function setLanguage(lang) {
+        const t = translations[lang];
+        const currentYear = new Date().getFullYear();
+
+        elementsToTranslate.headerTitle.textContent = t.headerTitle;
+        elementsToTranslate.title.textContent = t.title;
+        elementsToTranslate.quoteTitleLabel.textContent = t.quoteTitleLabel;
+        elementsToTranslate.clientInfoTitle.textContent = t.clientInfoTitle;
+        elementsToTranslate.clientName.placeholder = t.clientNamePlaceholder;
+        elementsToTranslate.clientEmail.placeholder = t.clientEmailPlaceholder;
+        elementsToTranslate.servicesTitle.textContent = t.servicesTitle;
+        elementsToTranslate.descHeader.textContent = t.descHeader;
+        elementsToTranslate.hoursHeader.textContent = t.hoursHeader;
+        elementsToTranslate.unitPriceHeader.textContent = t.unitPriceHeader;
+        elementsToTranslate.totalHeader.textContent = t.totalHeader;
+        elementsToTranslate.addServiceBtn.textContent = t.addServiceBtn;
+        elementsToTranslate.subtotalLabel.textContent = t.subtotalLabel;
+        elementsToTranslate.totalLabel.textContent = t.totalLabel;
+        elementsToTranslate.exportPdfBtn.textContent = t.exportPdfBtn;
+        elementsToTranslate.descriptionLabel.textContent = t.descriptionLabel;
+        elementsToTranslate.footerText.textContent = t.footerText(currentYear);
+      }
+
+      // Handle language selection change
+      document
+        .getElementById("languageSelect")
+        .addEventListener("change", (e) => {
+          setLanguage(e.target.value);
+        });
+
+      // Initialize language
+      setLanguage("en");
+
       function addService() {
         const tbody = document.querySelector("#servicesTable tbody");
         const row = document.createElement("tr");
 
         row.innerHTML = `
-        <td><input type="text" class="desc"></td>
-        <td><input type="number" class="qty" value="1" min="1" onchange="calculateTotals()"></td>
-        <td><input type="number" class="price" value="0" min="0" onchange="calculateTotals()"></td>
-        <td><span class="line-total">0.00</span> €</td>
-      `;
+          <td><input type="text" class="desc"></td>
+          <td><input type="number" class="qty" value="1" min="1" onchange="calculateTotals()"></td>
+          <td><input type="number" class="unitPrice" value="0" min="0" step="0.01" onchange="calculateTotals()"></td>
+          <td class="lineTotal">0.00</td>
+        `;
 
         tbody.appendChild(row);
+        calculateTotals();
       }
 
       function calculateTotals() {
+        const rows = document.querySelectorAll("#servicesTable tbody tr");
         let subtotal = 0;
-        document.querySelectorAll("#servicesTable tbody tr").forEach((row) => {
-          const qty = parseFloat(row.querySelector(".qty").value);
-          const price = parseFloat(row.querySelector(".price").value);
-          const total = qty * price;
-          row.querySelector(".line-total").textContent = total.toFixed(2);
-          subtotal += total;
+
+        rows.forEach((row) => {
+          const qty = parseFloat(row.querySelector(".qty").value) || 0;
+          const unitPrice = parseFloat(row.querySelector(".unitPrice").value) || 0;
+          const lineTotal = qty * unitPrice;
+          row.querySelector(".lineTotal").textContent = lineTotal.toFixed(2);
+          subtotal += lineTotal;
         });
 
         document.getElementById("subtotal").textContent = subtotal.toFixed(2);
+        // For now, total = subtotal (no tax or other)
         document.getElementById("total").textContent = subtotal.toFixed(2);
       }
 
+      // Export PDF function with fixes and added quote title and description
       async function exportPDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
 
-        const name = document.getElementById("clientName").value;
-        const email = document.getElementById("clientEmail").value;
-        const rows = document.querySelectorAll("#servicesTable tbody tr");
+        // Quote Title (bigger font, top)
+        const quoteTitle = document.getElementById("quoteTitle").value || elementsToTranslate.title.textContent;
+        doc.setFontSize(20);
+        doc.text(quoteTitle, 14, 22);
 
-        let y = 20;
-        doc.setFontSize(16);
-        doc.text("Quote", 105, y, { align: "center" });
-
-        y += 10;
+        // Client info (smaller font, below title)
+        const clientName = document.getElementById("clientName").value;
+        const clientEmail = document.getElementById("clientEmail").value;
         doc.setFontSize(12);
-        doc.text(`Client: ${name}`, 20, y);
-        y += 7;
-        doc.text(`Email: ${email}`, 20, y);
+        doc.text(`${elementsToTranslate.clientInfoTitle.textContent}:`, 14, 32);
+        doc.text(`${elementsToTranslate.clientName.placeholder}: ${clientName}`, 14, 40);
+        doc.text(`${elementsToTranslate.clientEmail.placeholder}: ${clientEmail}`, 14, 48);
 
-        y += 10;
-        doc.text("Services:", 20, y);
-        y += 7;
+        // Table headers and data
+        const services = [];
+        document.querySelectorAll("#servicesTable tbody tr").forEach((row) => {
+          const desc = row.querySelector(".desc").value;
+          const qty = row.querySelector(".qty").value;
+          const unitPrice = row.querySelector(".unitPrice").value;
+          const total = row.querySelector(".lineTotal").textContent;
 
-        doc.autoTable({
-          startY: y,
-          head: [["Description", "Quantity", "Unit Price (€)", "Total (€)"]],
-          body: [...rows].map((row) => [
-            row.querySelector(".desc").value,
-            row.querySelector(".qty").value,
-            row.querySelector(".price").value,
-            (
-              row.querySelector(".qty").value *
-              row.querySelector(".price").value
-            ).toFixed(2),
-          ]),
-          theme: "grid",
+          if (desc.trim() !== "") {
+            services.push([desc, qty, unitPrice, total]);
+          }
         });
 
-        y = doc.lastAutoTable.finalY + 10;
-        doc.setFont(undefined, "bold");
+        let startY = 58;
+        if (services.length > 0) {
+          doc.autoTable({
+            startY,
+            head: [[
+              elementsToTranslate.descHeader.textContent,
+              elementsToTranslate.hoursHeader.textContent,
+              elementsToTranslate.unitPriceHeader.textContent,
+              elementsToTranslate.totalHeader.textContent,
+            ]],
+            body: services,
+            styles: { fontSize: 10 },
+          });
+          startY = doc.lastAutoTable.finalY + 10;
+        }
+
+        // Totals at bottom
         doc.text(
-          `Total: ${document.getElementById("total").textContent} €`,
-          20,
-          y
+          `${elementsToTranslate.subtotalLabel.textContent} ${document.getElementById("subtotal").textContent} €`,
+          14,
+          startY
         );
-        doc.setFont(undefined, "normal");
+        doc.text(
+          `${elementsToTranslate.totalLabel.textContent} ${document.getElementById("total").textContent} €`,
+          14,
+          startY + 8
+        );
+
+        // Add description/notes below totals
+        const description = document.getElementById("quoteDescription").value.trim();
+        if (description) {
+          doc.setFontSize(12);
+          doc.text(elementsToTranslate.descriptionLabel.textContent + ":", 14, startY + 22);
+
+          // Handle multi-line text with wrapping
+          const splitDescription = doc.splitTextToSize(description, 180);
+          doc.text(splitDescription, 14, startY + 30);
+        }
 
         doc.save("quote.pdf");
       }
+
+      // Add initial one service row
+      addService();
     </script>
   </body>
 </html>
